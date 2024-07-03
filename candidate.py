@@ -51,6 +51,19 @@ class EmployeeDetail:
         bg_img = Label(Left_frame,image=self.photoleft)
         bg_img.place(x=0,y=0,width=660,height=130)
 
+        # Current course
+        current_course_frame = LabelFrame(Left_frame,bd=2,bg="white",relief=RIDGE,text="Current course",font=("time new roman",15))
+        current_course_frame.place(x=5,y=135,width=720,height=150)
+
+        dep_label = Label(current_course_frame,font=("time new roman",12,"bold"))
+        dep_label.grid(row=0,column=0,padx=10)
+
+        dep_combo = ttk.Combobox(current_course_frame,font=("time new roman",12,"bold"),state="readonly")
+        dep_combo["values"]= ("Select Department","Computer","IT","Civil","Mechnical")
+        dep_combo.current(0)
+        dep_combo.grid(row=0,column=1,padx=2,pady=10)
+
+
         #right label frame
         Right_frame = LabelFrame(main_frame,bd=2,bg="white",relief=RIDGE,text="Employee Details",font=("time new roman",15))
         Right_frame.place(x=680,y=10,width=660,height=580)
