@@ -5,7 +5,7 @@ from tkinter import messagebox
 import os
 import mysql.connector
 
-os.chdir(r'E:\OpenCV\Face Recognition\FaceReconition')
+os.chdir(r'C:\Users\aakanksha bhadsale\Desktop\FaceReconition')
 
 class EmployeeDetail:
     def  __init__(self,root):
@@ -14,7 +14,7 @@ class EmployeeDetail:
         self.root.title("Face Recognition System")
 
         # ========= VARIABLE ============
-        self.var_dep = StringVar()
+        self.var_department = StringVar()
         self.var_empType = StringVar()
         self.var_designation = StringVar()
         self.var_emp_id = StringVar()
@@ -79,7 +79,7 @@ class EmployeeDetail:
         dep_label = Label(current_course_frame,text="Department:",bg="white",font=("time new roman",12,"bold"))
         dep_label.grid(row=0,column=0,padx=8)
 
-        dep_combo = ttk.Combobox(current_course_frame,textvariable=self.var_dep,font=("time new roman",12,"bold"),state="readonly",width=20)
+        dep_combo = ttk.Combobox(current_course_frame,textvariable=self.var_department,font=("time new roman",12,"bold"),state="readonly",width=20)
         dep_combo["values"]= ("Select Department","Computer","IT","Civil","Mechnical")
         dep_combo.current(0)
         dep_combo.grid(row=0,column=1,padx=2,pady=10,sticky=W)
@@ -98,7 +98,7 @@ class EmployeeDetail:
         dep_label.grid(row=1,column=0,padx=8)
 
         dep_combo = ttk.Combobox(current_course_frame,textvariable=self.var_designation,font=("time new roman",12,"bold"),state="readonly",width=20)
-        dep_combo["values"]= ("Select Year","Computer","IT","Civil","Mechnical")
+        dep_combo["values"]= ("Select Designation","Computer","IT","Civil","Mechnical")
         dep_combo.current(0)
         dep_combo.grid(row=1,column=1,padx=2,pady=10,sticky=W)
 
@@ -252,7 +252,7 @@ class EmployeeDetail:
         scroll_x=ttk.Scrollbar(table_frame,orient=HORIZONTAL)
         scroll_y=ttk.Scrollbar(table_frame,orient=VERTICAL)
 
-        self.student_table=ttk.Treeview(table_frame,columns=("dep","emp_type","ID","name","gender","dob","email","address","pincode","joining date","manager","photo"),xscrollcommand=scroll_x.set,yscrollcommand=scroll_y.set)
+        self.student_table=ttk.Treeview(table_frame,columns=("department","emp_type","EMP_ID","name","gender","dob","email","address","pincode","joining date","manager","photo"),xscrollcommand=scroll_x.set,yscrollcommand=scroll_y.set)
         
         scroll_x.pack(side=BOTTOM,fill=X)
         scroll_y.pack(side=RIGHT,fill=Y)
@@ -260,9 +260,9 @@ class EmployeeDetail:
         scroll_x.config(command=self.student_table.xview)
         scroll_y.config(command=self.student_table.yview)
 
-        self.student_table.heading("dep",text="Department")
+        self.student_table.heading("department",text="Department")
         self.student_table.heading("emp_type",text="EmployeeType")
-        self.student_table.heading("ID",text="EmployeeID")
+        self.student_table.heading("EMP_ID",text="EmployeeID")
         self.student_table.heading("name",text="Name")
         self.student_table.heading("gender",text="Gender")
         self.student_table.heading("dob",text="DOB")
@@ -274,9 +274,9 @@ class EmployeeDetail:
         self.student_table.heading("photo",text="PhotoSampleStatus")
         self.student_table["show"]="headings"
         
-        self.student_table.column("dep",width=100)
+        self.student_table.column("department",width=100)
         self.student_table.column("emp_type",width=100)
-        self.student_table.column("ID",width=100)
+        self.student_table.column("EMP_ID",width=100)
         self.student_table.column("name",width=100)
         self.student_table.column("gender",width=100)
         self.student_table.column("dob",width=100)
@@ -292,26 +292,29 @@ class EmployeeDetail:
     # ==================== Data function ==============================
 
     def add_data(self):
-        if self.var_dep.get()=="Select Department" or self.var_name.get() == "" or self.var_emp_id.get() == "":
+        if self.var_department.get()=="Select Department" or self.var_name.get() == "" or self.var_emp_id.get() == "":
             messagebox.showerror("Error","Fields are required",parent =self.root)
         else:
             try:
                 conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
                 my_cursor = conn.cursor()
-                my_cursor.excute("insert into student values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%)",(
-                    self.var_emp_id.get(),
-                    self.var_name.get(),
-                    self.var_gender.get(),
-                    self.var_bod.get(),
-                    self.var_email.get(),
-                    self.var_phone.get(),
-                    self.var_address.get(),
-                    self.var_pincode.get(),
-                    self.var_dep.get(),
-                    self.var_empType.get(),
-                    self.var_designation.get(),
-                    self.var_radio1.get()
-                ))
+                query = "INSERT INTO emp (emp_id,emp_name,gender,bod,email,phone,address,joining_date,pincode,department,emptype,designation,manager,photo_sample) values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                val = ( self.var_emp_id.get(),
+                        self.var_name.get(),
+                        self.var_gender.get(),
+                        self.var_bod.get(),
+                        self.var_email.get(),
+                        self.var_phone.get(),
+                        self.var_address.get(),
+                        self.var_join_date.get(),
+                        self.var_pincode.get(),
+                        self.var_department.get(),
+                        self.var_empType.get(),
+                        self.var_designation.get(),
+                        self.var_manager.get(),
+                        self.var_radio1.get()
+                        )
+                my_cursor.execute(query,val)
                 conn.commit()
                 conn.close()
                 messagebox.showinfo("Success","Employee has been added successfully",parent=self.root)

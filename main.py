@@ -6,7 +6,7 @@ import os
 
 from candidate import EmployeeDetail 
 
-os.chdir(r'E:\OpenCV\Face Recognition\FaceReconition')
+os.chdir(r'C:\Users\aakanksha bhadsale\Desktop\FaceReconition')
 
 class Face_Recognition_system:
     def  __init__(self,root):
