@@ -289,6 +289,9 @@ class EmployeeDetail:
         
 
         self.student_table.pack(fill=BOTH,expand=1)
+        self.student_table.bind("<ButtonRelease>",self.get_cursor)
+        self.fetch_data()
+
     # ==================== Data function ==============================
 
     def add_data(self):
@@ -316,10 +319,56 @@ class EmployeeDetail:
                         )
                 my_cursor.execute(query,val)
                 conn.commit()
+                self.fetch_data()
                 conn.close()
                 messagebox.showinfo("Success","Employee has been added successfully",parent=self.root)
             except Exception as es:
                 messagebox.showerror("Error",f"Due to :{str(es)}",parent=self.root)
+    # Fetch data
+    def fetch_data(self):
+        conn = mysql.connector.connect(host="localhost",user ="root",password="root",database="face_recognition")
+        my_cursor = conn.cursor()
+        my_cursor.execute("SELECT * FROM emp")
+        data = my_cursor.fetchall()
+
+        if len(data)!= 0:
+            self.student_table.delete(*self.student_table.get_children())
+            for i in data:
+                self.student_table.insert("",END,values=i)
+            conn.commit()
+        conn.close()
+    # Get data
+    def get_cursor(self,event=""):
+        cursor_foucs = self.student_table.focus()
+        content=self.student_table.item(cursor_foucs)
+        data=content["values"]
+        
+        self.var_emp_id.set(data[0]),
+        self.var_name.set(data[1]),
+        self.var_gender.set(data[2]),
+        self.var_bod.set(data[3]),
+        self.var_email.set(data[4]),
+        self.var_phone.set(data[5]),
+        self.var_address.set(data[6]),
+        self.var_join_date.set(data[7]),
+        self.var_pincode.set(data[8]),
+        self.var_department.set(data[9]),
+        self.var_empType.set(data[10]),
+        self.var_designation.set(data[11]),
+        self.var_manager.set(data[12]),
+        self.var_radio1.set(data[13])
+
+    # Update Function
+    def update_data(self):
+        if self.var_department.get()=="Select Department" or self.var_name.get() == "" or self.var_emp_id.get() == "":
+            messagebox.showerror("Error","Fields are required",parent =self.root)
+        else:
+            try:
+                Update=messagebox.askyesno("Update","Do ")
+                conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
+                my_cursor = conn.cursor()
+
+        
 
 
 if __name__ == '__main__':
