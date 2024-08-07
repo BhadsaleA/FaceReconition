@@ -192,13 +192,13 @@ class EmployeeDetail:
         save_btn=Button(btn_frame,text="Save",command=self.add_data,width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
         save_btn.grid(row=0,column=1)
 
-        update_btn=Button(btn_frame,text="Update",width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
+        update_btn=Button(btn_frame,text="Update",command=self.update_data,width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
         update_btn.grid(row=0,column=2)
 
-        delete_btn=Button(btn_frame,text="Delete",width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
+        delete_btn=Button(btn_frame,text="Delete",command=self.delete_data,width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
         delete_btn.grid(row=0,column=3)
 
-        reset_btn=Button(btn_frame,text="Reset",width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
+        reset_btn=Button(btn_frame,text="Reset",command=self.reset_data,width=16,font=("time new roman",13,"bold"),bg="blue",fg="white")
         reset_btn.grid(row=0,column=4)
 
         #btn2 frame
@@ -364,9 +364,77 @@ class EmployeeDetail:
             messagebox.showerror("Error","Fields are required",parent =self.root)
         else:
             try:
-                Update=messagebox.askyesno("Update","Do ")
-                conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
-                my_cursor = conn.cursor()
+                Update=messagebox.askyesno("Update","Do you want to update this employee",parent= self.root)
+                if Update>0:
+                    conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
+                    my_cursor = conn.cursor()
+                    query = "UPDATE emp SET emp_name=%s,gender=%s,bod=%s,email=%s,phone=%s,address=%s,joining_date=%s,pincode=%s,department=%s,emptype=%s,designation=%s,manager=%s,photo_sample=%s WHERE emp_id = %s",(
+                        self.var_name.get(),
+                        self.var_gender.get(),
+                        self.var_bod.get(),
+                        self.var_email.get(),
+                        self.var_phone.get(),
+                        self.var_address.get(),
+                        self.var_join_date.get(),
+                        self.var_pincode.get(),
+                        self.var_department.get(),
+                        self.var_empType.get(),
+                        self.var_designation.get(),
+                        self.var_manager.get(),
+                        self.var_radio1.get(),
+                        self.var_emp_id.get()
+                    )
+                    my_cursor.execute(query)
+                else:
+                    if not Update:
+                        return
+                messagebox.showinfo("Success","Employee detail successfully updated",parent=self.root)
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+            except Exception as es:
+                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)      
+
+    #Delete function
+    def delete_data(self):
+        if self.var_emp_id.get()==" ":
+            messagebox.showerror("Error","Not found",parent =self.root)
+        else:
+            try:
+                delete=messagebox.askyesno("Delete","Do you want to delete this employee",parent= self.root)
+                if delete>0:
+                    conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
+                    my_cursor = conn.cursor()
+                    query = "DELETE FROM emp WHERE emp_id=%s"
+                    val= self.var_emp_id.get()
+                    my_cursor(query,val)
+                else:
+                    if not delete:
+                        return  
+                messagebox.showinfo("Delete","Succesfully deleted this  employee",parent=self.root)
+                conn.commit()
+                self.fetch_data()
+                conn.close()
+            except Exception as es:
+                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
+
+    #Reset function
+    def reset_data(self):
+        self.var_emp_id.set(""),
+        self.var_name.set(""),
+        self.var_gender.set("Select Gender"),
+        self.var_bod.set(""),
+        self.var_email.set(""),
+        self.var_phone.set(""),
+        self.var_address.set(""),
+        self.var_join_date.set(""),
+        self.var_pincode.set(""),
+        self.var_department.set("Select Department"),
+        self.var_empType.set("Select Employee Type"),
+        self.var_designation.set("Select Designation"),
+        self.var_manager.set(""),
+        self.var_radio1.set("")
+
 
         
 
