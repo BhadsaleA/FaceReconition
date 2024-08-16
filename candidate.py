@@ -3,6 +3,7 @@ from tkinter import ttk
 from PIL import Image,ImageTk
 from tkinter import messagebox
 import os
+import cv2
 import mysql.connector
 
 os.chdir(r'C:\Users\aakanksha bhadsale\Desktop\FaceReconition')
@@ -343,19 +344,19 @@ class EmployeeDetail:
         content=self.student_table.item(cursor_foucs)
         data=content["values"]
         
-        self.var_emp_id.set(data[0]),
-        self.var_name.set(data[1]),
-        self.var_gender.set(data[2]),
-        self.var_bod.set(data[3]),
-        self.var_email.set(data[4]),
-        self.var_phone.set(data[5]),
-        self.var_address.set(data[6]),
-        self.var_join_date.set(data[7]),
-        self.var_pincode.set(data[8]),
-        self.var_department.set(data[9]),
-        self.var_empType.set(data[10]),
-        self.var_designation.set(data[11]),
-        self.var_manager.set(data[12]),
+        self.var_emp_id.set(data[0])
+        self.var_name.set(data[1])
+        self.var_gender.set(data[2])
+        self.var_bod.set(data[3])
+        self.var_email.set(data[4])
+        self.var_phone.set(data[5])
+        self.var_address.set(data[6])
+        self.var_join_date.set(data[7])
+        self.var_pincode.set(data[8])
+        self.var_department.set(data[9])
+        self.var_empType.set(data[10])
+        self.var_designation.set(data[11])
+        self.var_manager.set(data[12])
         self.var_radio1.set(data[13])
 
     # Update Function
@@ -366,9 +367,11 @@ class EmployeeDetail:
             try:
                 Update=messagebox.askyesno("Update","Do you want to update this employee",parent= self.root)
                 if Update>0:
+                    print("Update:",Update)
                     conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
                     my_cursor = conn.cursor()
-                    query = "UPDATE emp SET emp_name=%s,gender=%s,bod=%s,email=%s,phone=%s,address=%s,joining_date=%s,pincode=%s,department=%s,emptype=%s,designation=%s,manager=%s,photo_sample=%s WHERE emp_id = %s",(
+                    query = "UPDATE emp SET emp_name=%s,gender=%s,bod=%s,email=%s,phone=%s,address=%s,joining_date=%s,pincode=%s,department=%s,emptype=%s,designation=%s,manager=%s,photo_sample=%s WHERE emp_id = %s"
+                    value = (
                         self.var_name.get(),
                         self.var_gender.get(),
                         self.var_bod.get(),
@@ -382,41 +385,47 @@ class EmployeeDetail:
                         self.var_designation.get(),
                         self.var_manager.get(),
                         self.var_radio1.get(),
-                        self.var_emp_id.get()
+                        self.var_emp_id.get(),
                     )
-                    my_cursor.execute(query)
+                    my_cursor.execute(query,value)
+                    messagebox.showinfo("Success","Employee detail successfully updated",parent=self.root)
+                    conn.commit()
+                    self.fetch_data()
                 else:
-                    if not Update:
-                        return
-                messagebox.showinfo("Success","Employee detail successfully updated",parent=self.root)
-                conn.commit()
-                self.fetch_data()
+                    return
                 conn.close()
             except Exception as es:
                 messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)      
 
     #Delete function
     def delete_data(self):
-        if self.var_emp_id.get()==" ":
-            messagebox.showerror("Error","Not found",parent =self.root)
+        if self.var_emp_id.get() == "":
+            messagebox.showerror("Error", "Employee ID not found", parent=self.root)
         else:
             try:
-                delete=messagebox.askyesno("Delete","Do you want to delete this employee",parent= self.root)
-                if delete>0:
-                    conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
+                delete = messagebox.askyesno("Delete", "Do you want to delete this employee?", parent=self.root)
+                if delete:
+                    print("Delete: ", delete)
+                    conn = mysql.connector.connect(host="localhost", user="root", password="root", database="face_recognition")
                     my_cursor = conn.cursor()
-                    query = "DELETE FROM emp WHERE emp_id=%s"
-                    val= self.var_emp_id.get()
-                    my_cursor(query,val)
+                    print("Connected......")
+
+                    # Corrected query execution
+                    query = "DELETE FROM emp WHERE emp_id = %s"
+                    value = (self.var_emp_id.get(),)
+                    my_cursor.execute(query, value)
+                    
+                    conn.commit()  
+                    self.fetch_data()
+                    self.reset_data()
+                    messagebox.showinfo("Delete", "Successfully deleted this employee", parent=self.root)
+                    
                 else:
-                    if not delete:
-                        return  
-                messagebox.showinfo("Delete","Succesfully deleted this  employee",parent=self.root)
-                conn.commit()
-                self.fetch_data()
-                conn.close()
+                    return
+                
+                conn.close()  # Close the connection
             except Exception as es:
-                messagebox.showerror("Error",f"Due To:{str(es)}",parent=self.root)
+                messagebox.showerror("Error", f"Due to: {str(es)}", parent=self.root)
 
     #Reset function
     def reset_data(self):
@@ -434,6 +443,75 @@ class EmployeeDetail:
         self.var_designation.set("Select Designation"),
         self.var_manager.set(""),
         self.var_radio1.set("")
+
+    #==============Generate data set pr take photo sample=========#
+    def generate_dataset(self):
+        if self.var_department.get()=="Select Department" or self.var_name.get() == "" or self.var_emp_id.get() == "":
+            messagebox.showerror("Error","Fields are required",parent =self.root)
+        else:
+                try:
+                    conn = mysql.connector.connect(host="localhost",user="root",password="root",database="face_recognition")
+                    my_cursor = conn.cursor()
+                    my_cursor.execute("SELECT * FROM emp")
+                    my_result=my_cursor.fetchall()
+                    id=0
+                    for x in my_result:
+                        id+=1
+                    query = "UPDATE emp SET emp_name=%s,gender=%s,bod=%s,email=%s,phone=%s,address=%s,joining_date=%s,pincode=%s,department=%s,emptype=%s,designation=%s,manager=%s,photo_sample=%s WHERE emp_id = %s"
+                    value = (
+                            self.var_name.get(),
+                            self.var_gender.get(),
+                            self.var_bod.get(),
+                            self.var_email.get(),
+                            self.var_phone.get(),
+                            self.var_address.get(),
+                            self.var_join_date.get(),
+                            self.var_pincode.get(),
+                            self.var_department.get(),
+                            self.var_empType.get(),
+                            self.var_designation.get(),
+                            self.var_manager.get(),
+                            self.var_radio1.get(),
+                            self.var_emp_id.get()==id+1,
+                        )
+                    my_cursor.execute(query,value)
+                    conn.commit()
+                    self.fetch_data()
+                    conn.close()
+        # ------Load predefine data on face frontals from opencv -----#
+        face_classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+        def face_cropped(img):
+            gray=cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+            faces = face_classifier.detectMultiScale(gray,1.3,5)
+            #scaling factor=1.3
+            #Minimum Neighbor=5
+
+            for (x,y,w,h) in faces:
+                face_cropped=img[y:y+h,x:x+w]
+                return face_cropped
+            
+        cap = cv2.VideoCapture(0)
+        img_id=0
+        while True:
+            ret,my_frame=cap.read()
+            if face_cropped(my_frame) is not None:
+                img_id+=1
+                face= cv2.resize(face_cropped(my_frame),(450,450))
+                face=cv2.cvtColor(face,cv2.COLOR_BGR2GRAY)
+                file_name_path="data/user."+str(id)+"."+str(img_id)+".jpg"
+                cv2.imwrite(file_name_path,face)
+                cv2.putText(face,str(img_id),(50,50),cv2.FONT_HERSHEY_COMPLEX,2,(0,255,0),2)
+                cv2.imshow("Cropped face",face)
+
+            if cv2.waitkey(1)==13 or int(img_id)==100:
+                break
+        cap.release()
+        cv2.destroyAllWindows()
+
+        messagebox.showinfo("Result","Generating data sets completed!!")
+    
+
 
 
         
